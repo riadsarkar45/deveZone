@@ -1,0 +1,198 @@
+require('dotenv').config();
+const express = require('express');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const bodyParser = require('body-parser');
+
+const cors = require('cors');
+const app = express();
+app.use(cors());
+const port = process.env.PORT || 5000;
+
+// Parse JSON bodies
+app.use(bodyParser.json());
+
+// Parse URL-encoded bodies
+app.use(bodyParser.urlencoded({ extended: true }));
+app.get('/', (req, res) => {
+    res.send('ambulance booking server is running');
+});
+
+app.listen(port, () => {
+    console.log(`Server is running on ${port}`);
+});
+
+
+
+
+const uri = "mongodb+srv://riadsarkar45:FNL5daoEtBwncBY9@cluster0.xgiocgi.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+const client = new MongoClient(uri, {
+    serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+    }
+});
+
+async function run() {
+    try {
+
+        const database = client.db('devZone')
+        const users = database.collection("users")
+        const posts = database.collection("posts")
+        const saved = database.collection("saved")
+        const comments = database.collection("comments")
+
+        app.get('/users/:uid', async (req, res) => {
+            const userId = req.params.uid;
+            const result = await users.find().toArray();
+            const filter = result.filter(user => user.uid !== (userId))
+            res.send(filter)
+        })
+
+        app.get('/get/post/with/category/:cat/:uid', async (req, res) => {
+            const postCat = req.params.cat;
+            const userId = req.params.uid;
+            if (postCat === 'Following') {
+                const query = { uid: userId }
+                const user = await users.findOne(query)
+                const follow = user.followers;
+                const postsFromFollowingUsers = await posts.find({ uid: { $in: follow } }).toArray();
+                return res.send(postsFromFollowingUsers)
+
+            }
+            const query = { category: postCat }
+            const findPost = await posts.find(query).toArray()
+            res.send(findPost)
+        })
+
+        app.post('/get/post', async (req, res) => {
+            const dataToFind = req.body;
+            const { id } = dataToFind;
+            const query = { _id: new ObjectId(id) }
+            const find = await posts.findOne(query)
+            res.json(find)
+        })
+
+        app.post('/addNewPost', async (req, res) => {
+            const dataToInsert = req.body;
+            const result = await posts.insertOne(dataToInsert)
+            res.send(result)
+        })
+
+        app.post('/save-post', async (req, res) => {
+            const dataToInsert = req.body;
+            const query = { postId: dataToInsert.postId, userId: dataToInsert.userId };
+            const findSavedPost = await saved.findOne(query)
+            if (findSavedPost) {
+                return res.send({ msg: 'Post already saved' })
+            }
+
+            const result = await saved.insertOne(dataToInsert)
+            res.send(result)
+        })
+
+        app.post('/post-comments', async (req, res) => {
+            const dataToInsert = req.body;
+            const post = { _id: new ObjectId(dataToInsert.postId) }
+            const commentUpdate = {
+                $inc: { totalComment: 1 }
+            }
+            await posts.updateOne(post, commentUpdate)
+
+
+            const result = await comments.insertOne(dataToInsert)
+            res.send(result)
+        })
+
+        app.put('/comment-replies/:cmtId', async (req, res) => {
+            const cmtId = req.params.cmtId;
+            const dataToUpdate = req.body;
+            const { reply, userName } = dataToUpdate;
+            const findCmt = { _id: new ObjectId(cmtId) }
+            const updateReplies = {
+                $push: { replies: { _id: new ObjectId(), userName: userName, reply: reply } }
+            }
+            const cmt = await comments.updateOne(findCmt, updateReplies)
+            res.send(cmt)
+        })
+
+        app.put('/like-comment/:cmtId/:uid', async (req, res) => {
+            const commentId = req.params.cmtId;
+            const userId = req.params.uid;
+            const query = { _id: new ObjectId(commentId) };
+            const updateLikes = {
+                $push: { likes: userId },
+                $inc: { totalLikes: 1 }
+            }
+            const update = await comments.updateOne(query, updateLikes)
+            res.send(update)
+        })
+
+        app.get('/comments/:postId', async (req, res) => {
+            const postId = req.params.postId;
+            const find = await comments.find({ postId: postId }).toArray()
+            res.send(find)
+        })
+
+        app.get('/saved-post/:uid', async (req, res) => {
+            const userId = req.params.uid
+            const query = { userId: userId }; // Assuming your document field is named userId
+            const result = await saved.find(query).toArray();
+            const setQuery = result.map(ids => new ObjectId(ids.postId))
+            const post = await posts.find({ _id: { $in: setQuery } }).toArray();
+            res.send(post);
+
+        });
+
+
+        app.put('/follow-user/:uid/:id/:followingToId', async (req, res) => {
+            const getUid = req.params.uid;
+            const id = req.params.id;
+            const flwId = req.params.followingToId;
+            const query = { _id: new ObjectId(getUid) }
+            const updateFollower = {
+                $push: { followers: id },
+                $inc: { followersCount: 1 }
+            }
+
+            const find = { uid: id }
+            const updateFollowing = {
+                $push: { following: flwId }
+            }
+            await users.updateOne(find, updateFollowing)
+
+
+            const update = await users.updateOne(query, updateFollower)
+
+            res.send(update)
+        })
+
+        app.put('/add-like/:uid/:id', async (req, res) => {
+            const getUserId = req.params.uid;
+            const postId = req.params.id;
+            const query = { _id: new ObjectId(postId) }
+            const post = await posts.findOne(query)
+            const { likerIds } = post;
+            const needCheck = getUserId.toString();
+            if (likerIds.includes(needCheck)) {
+                return res.send({ msg: 'You already liked the post' })
+            }
+            const updateLikes = {
+                $push: { likerIds: getUserId },
+                $inc: { likes: 1 }
+            }
+            const update = await posts.updateOne(query, updateLikes)
+            res.send(update)
+        })
+
+
+
+        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    } finally {
+        // Ensures that the client will close when you finish/error
+        //await client.close();
+    }
+}
+run().catch(console.dir);
