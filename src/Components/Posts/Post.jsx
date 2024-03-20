@@ -6,15 +6,15 @@ import { FaRegSave } from "react-icons/fa";
 
 const Post = ({ post, handleSavePost }) => {
     const { user } = useContext(AuthContext)
-    const { posterName, content, title, _id } = post;
+    const { posterName, content, title, _id, category } = post;
 
     const words = content.split(/\s+/);
 
     // Select the first 100 words and join them back into a string
-    let truncatedContent = words.slice(0, 80).join(' ');
+    let truncatedContent = words.slice(0, 50).join(' ');
 
     // Add ellipsis at the end if the original content is longer than 100 words
-    if (words.length > 80) {
+    if (words.length > 50) {
         truncatedContent += '...';
     }
 
@@ -41,10 +41,10 @@ const Post = ({ post, handleSavePost }) => {
                 </div>
 
                 <div>
-                    
-                    <NavLink to={`/ddddd/${posterName}/${_id}/${user?.uid}`}><h2 className='text-black text-2xl'>{title}</h2></NavLink>
-                    
 
+                    <NavLink to={`/ddddd/${posterName}/${_id}/${user?.uid}`}><h2 className='text-black text-2xl mb-3'>{title}</h2></NavLink>
+                    <div className='mb-5' dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
+                    <span className='bg-gray-200 p-1 mt-2 rounded-md mb-3'>{category}</span>
                 </div>
 
             </div>

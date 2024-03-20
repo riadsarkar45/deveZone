@@ -11,14 +11,16 @@ const Users = () => {
     const { refetch } = useQuery({
         queryKey: ["data"],
         queryFn: async () => {
+            if(!user) return null
             const res = await axiosPublic.get(`/users/${user?.uid}`);
             setUsers(res.data);
             return res.data;
         },
+        enabled: !!user
     });
 
     const handleFollowUser = (uid, id, followingToId) => {
-        axiosPublic.put(`/follow-user/${id}/${uid}/${followingToId}`).then(res => console.log(res.data), refetch(),)
+        axiosPublic.put(`/follow-user/${id}/${uid}/${followingToId}`).then(() => refetch(),)
     }
     return (
         <div>

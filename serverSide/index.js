@@ -46,12 +46,20 @@ async function run() {
 
         app.get('/users/:uid', async (req, res) => {
             const userId = req.params.uid;
-            const result = await users.find().toArray();
-            const filter = result.filter(user => user.uid !== (userId))
-            res.send(filter)
-        })
+            let result;
 
-        app.get('/get/post/with/category/:cat/:uid', async (req, res) => {
+            if (userId) {
+                result = await users.find({ uid: { $ne: userId } }).toArray();
+            } else {
+                res.status(400).send("No UID provided");
+                return;
+            }
+
+            res.send(result);
+        });
+
+
+        app.post('/get/post/with/category/:cat/:uid', async (req, res) => {
             const postCat = req.params.cat;
             const userId = req.params.uid;
             if (postCat === 'Following') {
@@ -61,10 +69,25 @@ async function run() {
                 const postsFromFollowingUsers = await posts.find({ uid: { $in: follow } }).toArray();
                 return res.send(postsFromFollowingUsers)
 
+            } else if (postCat === 'For You') {
+                const user = await users.findOne({ uid: userId })
+                const topics = user.selectedTopics
+                const findPost = await posts.find({ category: { $in: topics } }).toArray()
+                return res.send(findPost)
+            } else {
+                const query = { category: postCat }
+                const findPost = await posts.find(query).toArray()
+                res.send(findPost)
             }
-            const query = { category: postCat }
-            const findPost = await posts.find(query).toArray()
-            res.send(findPost)
+
+        })
+
+        app.get('/get/post/default/:cat/:uid', async (req, res) => {
+            const userId = req.params.uid
+            const user = await users.findOne({ uid: userId })
+            const topics = user.selectedTopics
+            const findPost = await posts.find({ category: { $in: topics } }).toArray()
+            res.send({ findPost, user })
         })
 
         app.post('/get/post', async (req, res) => {
@@ -116,6 +139,17 @@ async function run() {
             }
             const cmt = await comments.updateOne(findCmt, updateReplies)
             res.send(cmt)
+        })
+
+        app.put('/set-user-post-topics/:uid', async (req, res) => {
+            const userId = req.params.uid
+            const dataToUpdate = req.body;
+            const query = { uid: userId }
+            const updates = {
+                $set: { selectedTopics: dataToUpdate }
+            }
+            const update = await users.updateOne(query, updates)
+            res.send(update)
         })
 
         app.put('/like-comment/:cmtId/:uid', async (req, res) => {

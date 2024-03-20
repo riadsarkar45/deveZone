@@ -1,12 +1,15 @@
 
 const IsLoading = () => {
     return (
-        <div className="flex items-center justify-center h-screen" >
-            <div className="flex space-x-4">
-                <div className="w-10 h-10 bg-gray-300 rounded-full animate-bounce"></div>
-                <div className="w-10 h-10 bg-gray-300 rounded-full animate-bounce"></div>
-                <div className="w-10 h-10 bg-gray-300 rounded-full animate-bounce"></div>
+        <div className="flex flex-col gap-4 w-full mt-10">
+            <div className="flex gap-4 items-center">
+                <div className="skeleton w-[2rem] h-[2rem] rounded-[2rem] shrink-0"></div>
+                <div className="flex flex-col gap-4">
+                    <div className="skeleton h-2 w-20"></div>
+                    <div className="skeleton h-2 w-28"></div>
+                </div>
             </div>
+            <div className="skeleton h-32 w-full"></div>
         </div>
     );
 };

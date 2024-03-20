@@ -10,29 +10,12 @@ const RightSidebar = () => {
     const [savedPost, setSavedPost] = useState([])
     const [isLoading, setIsLoading] = useState(true)
     const { user } = useContext(AuthContext)
-    const { refetch } = useQuery({
-        queryKey: ["data"],
-        queryFn: async () => {
-            if (!user) return null
-            const res = await axiosPublic.get(`/saved-post/${user?.uid}`);
-            setSavedPost(res.data);
-            setIsLoading(false)
-            return res.data;
-        },
-        enabled: !!user,
-    });
+    
     return (
         <div>
             <div className="text-sm flex gap-3 p-2">
                 <div className="">
-                    <h2>Recently Saved</h2>
-                    <div className="text-xl">
-                        {
-                            isLoading ? (
-                                <IsLoading />
-                            ) : savedPost?.map((posts, i) => <SavedPost key={i} posts={posts}></SavedPost>)
-                        }
-                    </div>
+                    <h2>Who to follow</h2>
 
                     <div>
                         <Users></Users>
