@@ -1,6 +1,6 @@
 import DOMPurify from 'dompurify';
 import { useContext } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { AuthContext } from '../../Auth/AuthProvider/AuthProvider';
 import { FaRegSave } from "react-icons/fa";
 
