@@ -33,18 +33,34 @@ const Home = () => {
     const [isLoading, setIsLoading] = useState(true)
     const [suggestions] = useState([])
     const [selectedTags, setSelectedTags] = useState([]);
+    const [defaultCat, setDefaultCat] = useState(null)
 
     const { refetch } = useQuery({
         queryKey: ["posts"],
         queryFn: async () => {
-            if(!user) return null
-            const res = await axiosPublic.get(`/get/post/default/${'For You'}/${user?.uid}`)
-            setPosts(res.data.findPost)
-            setIsLoading(false)
-            return res.data;
+            if (!user) return null;
+            try {
+                const res = await axiosPublic.get(`/get/post/default/${'For You'}/${user?.uid}`);
+                const cat = await axiosPublic.get(`/categories`)
+                if(selectedCategory !== 'For You'){
+                    return null
+                }else {
+                    if (cat.data.length > 0) {
+                        setDefaultCat(cat.data[0].name);
+                    }
+                }
+                setPosts(res.data)
+                setIsLoading(false);
+                return res.data;
+            } catch (error) {
+                console.error("Error fetching posts:", error);
+                return null;
+            }
         },
         enabled: !!user
     });
+
+
     useEffect(() => {
         refetch();
     }, [refetch])
@@ -70,7 +86,6 @@ const Home = () => {
 
 
     const gePosts = (cat) => {
-        setIsLoading(true)
         setSelectedCategory(cat)
         axiosPublic.post(`/get/post/with/category/${cat}/${user?.uid}`)
             .then(res =>

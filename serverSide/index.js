@@ -43,6 +43,7 @@ async function run() {
         const posts = database.collection("posts")
         const saved = database.collection("saved")
         const comments = database.collection("comments")
+        const categories = database.collection("categories")
 
         app.get('/users/:uid', async (req, res) => {
             const userId = req.params.uid;
@@ -56,39 +57,58 @@ async function run() {
             }
 
             res.send(result);
-        });
+        })
+
+        app.get('/categories', async (req, res) => {
+            const result = await categories.find().toArray();
+            res.send(result)
+        })
 
 
         app.post('/get/post/with/category/:cat/:uid', async (req, res) => {
-            const postCat = req.params.cat;
-            const userId = req.params.uid;
-            if (postCat === 'Following') {
-                const query = { uid: userId }
-                const user = await users.findOne(query)
-                const follow = user.followers;
-                const postsFromFollowingUsers = await posts.find({ uid: { $in: follow } }).toArray();
-                return res.send(postsFromFollowingUsers)
-
-            } else if (postCat === 'For You') {
-                const user = await users.findOne({ uid: userId })
-                const topics = user.selectedTopics
-                const findPost = await posts.find({ category: { $in: topics } }).toArray()
-                return res.send(findPost)
-            } else {
-                const query = { category: postCat }
-                const findPost = await posts.find(query).toArray()
-                res.send(findPost)
+            try {
+                const postCat = req.params.cat;
+                const userId = req.params.uid;
+                if (postCat === 'Following') {
+                    const user = await users.findOne({ uid: userId });
+                    const follow = user.following;
+                    const postsFromFollowingUsers = await posts.find({ uid: { $in: follow } }).toArray();
+                    return res.status(200).json(postsFromFollowingUsers);
+                } else if (postCat === 'For You') {
+                    const user = await users.findOne({ uid: userId });
+                    const topics = user.selectedTopics || [];
+                    const findPost = await posts.find({ category: { $in: topics } }).toArray();
+                    return res.status(200).json(findPost);
+                } else {
+                    const query = { category: postCat };
+                    const findPost = await posts.find(query).toArray();
+                    return res.status(200).json(findPost);
+                }
+            } catch (err) {
+                console.error(err);
+                return res.status(500).json({ msg: 'Internal Server Error' });
             }
-
-        })
+        });
+        
 
         app.get('/get/post/default/:cat/:uid', async (req, res) => {
-            const userId = req.params.uid
-            const user = await users.findOne({ uid: userId })
-            const topics = user.selectedTopics
-            const findPost = await posts.find({ category: { $in: topics } }).toArray()
-            res.send({ findPost, user })
-        })
+            try {
+                const userId = req.params.uid;
+                const user = await users.findOne({ uid: userId });
+
+                if (!user) {
+                    return res.status(404).json({ error: "User not found" });
+                }
+
+                const topics = user.selectedTopics || [];
+                const findPost = await posts.find({ category: { $in: topics } }).toArray();
+                res.send(findPost);
+            } catch (error) {
+                console.error("Error fetching default posts:", error);
+                res.status(500).json({ error: "Internal server error" });
+            }
+        });
+
 
         app.post('/get/post', async (req, res) => {
             const dataToFind = req.body;
@@ -219,6 +239,17 @@ async function run() {
             }
             const update = await posts.updateOne(query, updateLikes)
             res.send(update)
+        })
+
+        app.post("/users", async (req, res) => {
+            const user = req.body;
+            const query = { email: user.email };
+            const existUser = await users.findOne(query);
+            if (existUser) {
+                return res.send({ message: 'userExist', InsertedId: null });
+            }
+            const result = await users.insertOne(user)
+            res.send(result)
         })
 
 

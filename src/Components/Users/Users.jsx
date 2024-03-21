@@ -20,7 +20,7 @@ const Users = () => {
     });
 
     const handleFollowUser = (uid, id, followingToId) => {
-        axiosPublic.put(`/follow-user/${id}/${uid}/${followingToId}`).then(() => refetch(),)
+        axiosPublic.put(`/follow-user/${id}/${uid}/${followingToId}`).then(() => refetch())
     }
     return (
         <div>

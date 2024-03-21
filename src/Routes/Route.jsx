@@ -4,6 +4,7 @@ import Login from "../Pages/Login";
 import Root from "../Components/Root/Root";
 import AddNewPost from "../Components/Posts/AddNewPost";
 import Detail from "../Components/Posts/Detail";
+import Registration from "../Pages/Registration";
 export const router = createBrowserRouter(
     [
         {
@@ -27,6 +28,10 @@ export const router = createBrowserRouter(
         {
             path: '/login',
             element: <Login />
+        },
+        {
+            path: '/register',
+            element: <Registration/>
         }
     ]
 )
