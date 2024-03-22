@@ -9,21 +9,7 @@ import Users from "./Components/Users/Users";
 import { CiCirclePlus } from "react-icons/ci";
 import Suggestions from "./Suggestions";
 import IsLoading from "./Hooks/IsLoading";
-const categories = [
 
-    {
-        "cateName": 'For You'
-    },
-    {
-        "cateName": 'Following'
-    },
-    {
-        "cateName": 'Technology'
-    },
-    {
-        "cateName": 'Programming'
-    },
-]
 const Home = () => {
     const axiosPublic = useAxiosPublic();
     const { user } = useContext(AuthContext)
@@ -34,19 +20,21 @@ const Home = () => {
     const [suggestions] = useState([])
     const [selectedTags, setSelectedTags] = useState([]);
     const [defaultCat, setDefaultCat] = useState(null)
-
+    const [categories, setCategories] = useState([])
     const { refetch } = useQuery({
         queryKey: ["posts"],
         queryFn: async () => {
             if (!user) return null;
             try {
-                const res = await axiosPublic.get(`/get/post/default/${'For You'}/${user?.uid}`);
-                const cat = await axiosPublic.get(`/categories`)
-                if(selectedCategory !== 'For You'){
+                const res = await axiosPublic.get(`/get/post/default/${defaultCat}/${user?.uid}`);
+                const cat = await axiosPublic.get(`/categories/${user?.uid}`)
+                setCategories(cat.data);
+                if (selectedCategory !== 'For You') {
                     return null
-                }else {
+                } else {
                     if (cat.data.length > 0) {
-                        setDefaultCat(cat.data[0].name);
+                        setDefaultCat(cat.data[0]);
+                        console.log(cat.data[0]);
                     }
                 }
                 setPosts(res.data)
@@ -117,12 +105,21 @@ const Home = () => {
                     <div className="flex gap-3 p-3 border-b border-gray-300 items-center">
                         <span className="text-2xl cursor-pointer" onClick={() => document.getElementById('my_modal_1').showModal()}><CiCirclePlus /></span>
                         {
-                            categories?.map((cat, i) =>
-                                <Categories key={i}
-                                    cat={cat}
-                                    gePosts={gePosts}
-                                    selectedCategory={selectedCategory}
-                                />
+                            isLoading ? (
+                                <div className="flex gap-2">
+                                    <div className="skeleton w-[9rem] h-[2rem]  shrink-0"></div>
+                                    <div className="skeleton w-[9rem] h-[2rem]  shrink-0"></div>
+                                    <div className="skeleton w-[9rem] h-[2rem]  shrink-0"></div>
+                                    <div className="skeleton w-[9rem] h-[2rem]  shrink-0"></div>
+                                </div>
+                            ) : (
+                                categories?.map((cats, i) =>
+                                    <Categories key={i}
+                                        cats={cats}
+                                        gePosts={gePosts}
+                                        selectedCategory={selectedCategory}
+                                    />
+                                )
                             )
                         }
                     </div>

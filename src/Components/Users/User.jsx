@@ -1,15 +1,12 @@
 import { useContext } from "react";
 import { AuthContext } from "../../Auth/AuthProvider/AuthProvider";
+import PropTypes from 'prop-types';
 
 const User = ({ users, handleFollowUser }) => {
     const { user } = useContext(AuthContext)
     const { name, followersCount, _id, followers, image, uid } = users;
     const filt = followers?.includes(user?.uid);
-    if (filt){
-        console.log('match');
-    }else{
-        console.log('no match');
-    }
+    
 
     return (
         <div>
@@ -36,5 +33,10 @@ const User = ({ users, handleFollowUser }) => {
         </div>
     );
 };
+
+User.propTypes = {
+    users: PropTypes.object,
+    handleFollowUser: PropTypes.func,
+}
 
 export default User;

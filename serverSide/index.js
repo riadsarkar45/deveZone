@@ -59,8 +59,15 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/categories', async (req, res) => {
-            const result = await categories.find().toArray();
+        app.get('/categories/:uid', async (req, res) => {
+            const result = await users.findOne({uid: req.params.uid})
+            
+            res.send(result.selectedTopics)
+        })
+
+        app.get('/all-topics', async (req, res) => {
+            const result = await categories.find().toArray()
+            
             res.send(result)
         })
 
@@ -159,6 +166,16 @@ async function run() {
             }
             const cmt = await comments.updateOne(findCmt, updateReplies)
             res.send(cmt)
+        })
+
+        app.put('/update-user-topic/:uid', async (req, res) => {
+            const userId = req.params.uid;
+            const topics = req.body;
+            const updateTopics = {
+                $addToSet:{selectedTopics: {$each: topics}}
+            }
+            const update = await users.updateOne({uid: userId}, updateTopics)
+            res.send(update)
         })
 
         app.put('/set-user-post-topics/:uid', async (req, res) => {
