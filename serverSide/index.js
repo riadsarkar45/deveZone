@@ -60,14 +60,13 @@ async function run() {
         })
 
         app.get('/categories/:uid', async (req, res) => {
-            const result = await users.findOne({uid: req.params.uid})
-            
+            const result = await users.findOne({ uid: req.params.uid })
+
             res.send(result.selectedTopics)
         })
 
         app.get('/all-topics', async (req, res) => {
             const result = await categories.find().toArray()
-            
             res.send(result)
         })
 
@@ -96,17 +95,12 @@ async function run() {
                 return res.status(500).json({ msg: 'Internal Server Error' });
             }
         });
-        
+
 
         app.get('/get/post/default/:cat/:uid', async (req, res) => {
             try {
                 const userId = req.params.uid;
                 const user = await users.findOne({ uid: userId });
-
-                if (!user) {
-                    return res.status(404).json({ error: "User not found" });
-                }
-
                 const topics = user.selectedTopics || [];
                 const findPost = await posts.find({ category: { $in: topics } }).toArray();
                 res.send(findPost);
@@ -127,6 +121,12 @@ async function run() {
 
         app.post('/addNewPost', async (req, res) => {
             const dataToInsert = req.body;
+
+            const updateCate = {
+                $inc: { posts: 1 }
+            }
+            await categories.updateOne({ name: dataToInsert.category }, updateCate)
+
             const result = await posts.insertOne(dataToInsert)
             res.send(result)
         })
@@ -172,9 +172,9 @@ async function run() {
             const userId = req.params.uid;
             const topics = req.body;
             const updateTopics = {
-                $addToSet:{selectedTopics: {$each: topics}}
+                $addToSet: { selectedTopics: { $each: topics } }
             }
-            const update = await users.updateOne({uid: userId}, updateTopics)
+            const update = await users.updateOne({ uid: userId }, updateTopics)
             res.send(update)
         })
 
@@ -216,6 +216,26 @@ async function run() {
             res.send(post);
 
         });
+
+        app.get('/individual-posts/:uid/:type', async (req, res) => {
+            const userId = req.params.uid;
+            const query = await posts.find({ uid: userId }).toArray();
+            res.send(query);
+        })
+
+        app.get('/loggedIn-user/:uid', async (req, res) => {
+            const userId = req.params.uid;
+            const user = await users.findOne({ uid: userId })
+            res.send(user)
+        })
+
+        app.get('/follower/following/:uid', async (req, res) =>{
+            const userId = req.params.uid;
+            const followers = await users.findOne({uid: userId})
+            const followersId = followers.following;
+            const result = await users.find({ uid: { $in: followersId } }).toArray()
+            res.send(result)
+        })
 
 
         app.put('/follow-user/:uid/:id/:followingToId', async (req, res) => {

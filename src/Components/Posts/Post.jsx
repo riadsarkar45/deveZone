@@ -3,6 +3,7 @@ import { useContext } from 'react';
 import { NavLink } from 'react-router-dom';
 import { AuthContext } from '../../Auth/AuthProvider/AuthProvider';
 import { FaRegSave } from "react-icons/fa";
+import PropTypes from 'prop-types';
 
 const Post = ({ post, handleSavePost }) => {
     const { user } = useContext(AuthContext)
@@ -22,7 +23,7 @@ const Post = ({ post, handleSavePost }) => {
 
     return (
         <div className="">
-            <div className=" bg-opacity-30 p-2 border-b border-gray-300">
+            <div className="shadow-sm bg-opacity-30 p-2 border-b border-gray-300">
                 <div className='flex justify-between'>
                     <div className="flex items-center gap-4">
                         <div>
@@ -52,5 +53,10 @@ const Post = ({ post, handleSavePost }) => {
         </div>
     );
 };
+
+Post.propTypes = {
+    post: PropTypes.object,
+    handleSavePost: PropTypes.func,
+}
 
 export default Post;

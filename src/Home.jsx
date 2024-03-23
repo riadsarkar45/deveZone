@@ -7,8 +7,8 @@ import { AuthContext } from "./Auth/AuthProvider/AuthProvider";
 import toast from "react-hot-toast";
 import Users from "./Components/Users/Users";
 import { CiCirclePlus } from "react-icons/ci";
-import Suggestions from "./Suggestions";
 import IsLoading from "./Hooks/IsLoading";
+import AllTopics from "./Pages/AllTopics";
 
 const Home = () => {
     const axiosPublic = useAxiosPublic();
@@ -17,41 +17,34 @@ const Home = () => {
     const [posts, setPosts] = useState([])
     const [isSaved, setIsSaved] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
-    const [suggestions] = useState([])
-    const [selectedTags, setSelectedTags] = useState([]);
-    const [defaultCat, setDefaultCat] = useState(null)
     const [categories, setCategories] = useState([])
-    const { refetch } = useQuery({
-        queryKey: ["posts"],
-        queryFn: async () => {
-            if (!user) return null;
-            try {
-                const res = await axiosPublic.get(`/get/post/default/${defaultCat}/${user?.uid}`);
-                const cat = await axiosPublic.get(`/categories/${user?.uid}`)
-                setCategories(cat.data);
-                if (selectedCategory !== 'For You') {
-                    return null
-                } else {
-                    if (cat.data.length > 0) {
-                        setDefaultCat(cat.data[0]);
-                        console.log(cat.data[0]);
-                    }
-                }
-                setPosts(res.data)
-                setIsLoading(false);
-                return res.data;
-            } catch (error) {
-                console.error("Error fetching posts:", error);
-                return null;
-            }
-        },
-        enabled: !!user
-    });
+
 
 
     useEffect(() => {
-        refetch();
-    }, [refetch])
+        if (!user) return;
+
+        setIsLoading(true);
+
+        axiosPublic.get(`/get/post/default/${'For You'}/${user.uid}`)
+            .then((res) => {
+                setPosts(res.data);
+            })
+            .catch((error) => {
+                console.error("Error fetching posts:", error);
+            });
+
+        axiosPublic.get(`/categories/${user.uid}`)
+            .then((res) => {
+                setCategories(res.data);
+            })
+            .catch((error) => {
+                console.error("Error fetching categories:", error);
+            })
+            .finally(() => {
+                setIsLoading(false);
+            });
+    }, [axiosPublic, user?.uid, user]);
 
     const handleSavePost = (postId) => {
         setIsSaved(true)
@@ -83,17 +76,7 @@ const Home = () => {
     }
 
 
-    const toggleTagSelection = (tag) => {
-        if (selectedTags.includes(tag)) {
-            setSelectedTags(selectedTags.filter(selectedTag => selectedTag !== tag));
-        } else {
-            setSelectedTags([...selectedTags, tag]);
-        }
-    }
 
-    const handleSetPostTopics = () => {
-        axiosPublic.put(`/set-user-post-topics/${user?.uid}`, selectedTags).then(() => refetch())
-    }
 
 
     return (
@@ -148,28 +131,12 @@ const Home = () => {
 
             {/* Open the modal using document.getElementById('ID').showModal() method */}
             <dialog id="my_modal_1" className="modal">
-                <div className="modal-box">
-                    <p className="py-4 text-2xl">Topics to follow </p>
-                    <div className="grid grid-cols-3 gap-3">
-                        {
-                            categories?.map((cat, i) =>
-                                <Suggestions
-                                    key={i}
-                                    cat={cat}
-                                    suggestions={suggestions}
-                                    toggleTagSelection={toggleTagSelection}
-                                    selectedTags={selectedTags}
-                                />
-                            )
-                        }
-                    </div>
+                <div className="modal-box w-11/12 max-w-5xl m-auto min-h-screen">
                     <div className="modal-action">
+                        <AllTopics />
                         <form method="dialog">
-
-                            <div className="flex gap-3">
-                                <button className="btn btn-error text-white">Close</button>
-                                <button onClick={() => handleSetPostTopics()} className="btn btn-success text-white">Save</button>
-                            </div>
+                            {/* if there is a button, it will close the modal */}
+                            <button className="btn">Close</button>
                         </form>
                     </div>
                 </div>

@@ -5,6 +5,9 @@ import Root from "../Components/Root/Root";
 import AddNewPost from "../Components/Posts/AddNewPost";
 import Detail from "../Components/Posts/Detail";
 import Registration from "../Pages/Registration";
+import Profile from "../Components/Profile/Profile";
+import Following from "../Components/Profile/Following";
+import Paren from "../Components/Profile/Paren";
 export const router = createBrowserRouter(
     [
         {
@@ -22,7 +25,11 @@ export const router = createBrowserRouter(
                 {
                     path: '/ddddd/:writer/:id/:uid',
                     element: <Detail/>
-                }
+                },
+                {
+                    path: '/profile',
+                    element: <Profile/>
+                },
             ]
         },
         {

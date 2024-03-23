@@ -2,13 +2,30 @@ import { Editor } from "@tinymce/tinymce-react";
 import { useContext, useState } from "react";
 import useAxiosPublic from "../../Hooks/useAxiosPublic";
 import { AuthContext } from "../../Auth/AuthProvider/AuthProvider";
+import { useQuery } from "@tanstack/react-query";
 
 const AddNewPost = () => {
     const [content, setEditorContent] = useState('');
     const [category, setCategory] = useState('')
     const [title, setTitle] = useState('')
+    const [categories, setCategories] = useState([])
     const axiosPublic = useAxiosPublic();
     const { user } = useContext(AuthContext);
+
+    const { refetch } = useQuery({
+        queryKey: ["posts"],
+        queryFn: async () => {
+            try {
+                const res = await axiosPublic.get(`/all-topics`);
+                setCategories(res.data)
+                return res.data;
+            } catch (error) {
+                console.error("Error fetching posts:", error);
+                return null;
+            }
+        },
+    })
+
     const handleEditorChange = (content) => {
         setEditorContent(content);
     };
@@ -23,8 +40,13 @@ const AddNewPost = () => {
 
     const handleAddNewPost = (e) => {
         e.preventDefault();
-        const dataToInsert = { posterName: user?.email, uid: user?.uid, content, title, category, likerIds: [] }
-        axiosPublic.post('/addNewPost', dataToInsert).then(() => { })
+        const dataToInsert = { posterName: user?.email, uid: user?.uid, content, title, category, likerIds: [], totalComment: 0, likes: 0 }
+        axiosPublic.post('/addNewPost', dataToInsert)
+            .then(() => {
+                refetch()
+                setTitle('')
+                setEditorContent('')
+            })
     }
 
 
@@ -35,8 +57,9 @@ const AddNewPost = () => {
                     <input onChange={e => handleGetTitle(e.target.value)} type="text" className="input input-bordered grow w-full" placeholder="Daisy" />
                     <select defaultValue={category} onChange={e => handleGetCategory(e.target.value)} className="select select-bordered w-full ">
                         <option defaultValue="Select Category">Select Category</option>
-                        <option>Technology</option>
-                        <option>Programming</option>
+                        {
+                            categories?.map((cat, i) => <option key={i}>{cat.name}</option>)
+                        }
                     </select>
                 </div>
                 <Editor
