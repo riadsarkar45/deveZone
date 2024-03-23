@@ -229,10 +229,19 @@ async function run() {
             res.send(user)
         })
 
-        app.get('/follower/following/:uid', async (req, res) =>{
+        app.get('/follower/following/:uid', async (req, res) => {
             const userId = req.params.uid;
-            const followers = await users.findOne({uid: userId})
+            const followers = await users.findOne({ uid: userId })
             const followersId = followers.following;
+            const result = await users.find({ uid: { $in: followersId } }).toArray()
+            res.send(result)
+
+        })
+
+        app.get('/follower/:uid', async (req, res) => {
+            const userId = req.params.uid;
+            const followersIds = await users.findOne({ uid: userId })
+            const followersId = followersIds.followers;
             const result = await users.find({ uid: { $in: followersId } }).toArray()
             res.send(result)
         })

@@ -41,6 +41,8 @@ const Profile = () => {
     const [myPost, setMyPost] = useState(false)
     const [following, setFollowing] = useState([])
     const [showFollowing, setIShowFollowing] = useState(false)
+    const [showFollowers, setShowFollowers] = useState(false)
+    const [followers, setFollowers] = useState(false)
     const { refetch } = useQuery({
         queryKey: ["posts"],
         queryFn: async () => {
@@ -72,18 +74,28 @@ const Profile = () => {
         } else if (clickedMenu === 'Following') {
             axiosPublic.get(`/follower/following/${user?.uid}`)
                 .then((res) => {
-                    console.log(res.data);
                     setFollowing(res.data)
                     setIShowFollowing(true)
                     setLibrary(false)
+                    setShowFollowers(false)
                     setMyPost(false)
                     setShowStats(false)
                 })
 
+        } else if (clickedMenu === 'Followers') {
+            axiosPublic.get(`/follower/${user?.uid}`)
+                .then((res) => {
+                    console.log(res.data);
+                    setShowFollowers(true)
+                    setFollowers(res.data)
+                    setIShowFollowing(false)
+                    setLibrary(false)
+                    setMyPost(false)
+                    setShowStats(false)
+                })
         }
         setClickedMenu(clickedMenu)
     }
-    console.log(following);
     const likes = allPosts?.map(likes => likes.likes)
     const comments = allPosts?.map(likes => likes.totalComment)
 
@@ -179,10 +191,16 @@ const Profile = () => {
                                 </div>
                             ) : showFollowing ? (
                                 <div className="p-3">
-                                    <h2 className="text-2xl mb-6">Followers</h2>
 
                                     {
                                         following?.map((follows, i) => <Following key={i} follows={follows} />)
+                                    }
+                                </div>
+                            ) : showFollowers ? (
+                                <div className="p-3">
+
+                                    {
+                                        followers?.map((follows, i) => <Following key={i} follows={follows} />)
                                     }
                                 </div>
                             ) : null
@@ -198,9 +216,8 @@ const Profile = () => {
                         </div>
                         <div className="p-3">
                             <h2 className="font-bold mb-3">{userInfo?.name}</h2>
-                            <h2>{userInfo?.followersCount} Follower || {userInfo?.following?.length} Following</h2>
+                            <h2>{userInfo?.followersCount} <span className="cursor-pointer" onClick={() => handleClickMenu('Followers')}>Follower</span>  || {userInfo?.following?.length} <span className="cursor-pointer" onClick={() => handleClickMenu('Following')}>Following</span></h2>
                             <h2 className="text-green-500 mt-6">Edit Profile</h2>
-                            <h2 onClick={() => handleClickMenu('Following')} className="mt-6 text-xl">Following</h2>
                             <div>
                                 <ul className="list-none mt-2 text-xl">
                                     {
