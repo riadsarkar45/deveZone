@@ -11,6 +11,8 @@ import ReactApexChart from 'react-apexcharts';
 import AllPost from "./AllPost";
 import { UserContext } from "../../Global/User";
 import Following from "./Following";
+import EditProfile from "./EditProfile";
+import ProfileVisitChart from "./ProfileVisitChart";
 const profileMenu = [
     {
         name: 'Library',
@@ -43,15 +45,19 @@ const Profile = () => {
     const [showFollowing, setIShowFollowing] = useState(false)
     const [showFollowers, setShowFollowers] = useState(false)
     const [followers, setFollowers] = useState(false)
+    const [followersLiked, setFollowersLiked] = useState([])
+    const [nonFollowersLikes, setNonFollowersLikes] = useState({})
+    const [isEditProfile, setIsEditProfile] = useState(false)
     const { refetch } = useQuery({
         queryKey: ["posts"],
         queryFn: async () => {
             try {
                 if (!user) return null
                 const res = await axiosPublic.get(`/saved-post/${user?.uid}`)
-                const allPosts = await axiosPublic.get(`/individual-posts/${user?.uid}/${'type'}`)
-
-                setAllPost(allPosts.data)
+                const allPosts = await axiosPublic.get(`/individual-posts/${user?.uid}`)
+                setNonFollowersLikes(allPosts.data.nonFollowers);
+                setFollowersLiked(allPosts.data.likedUsers);
+                setAllPost(allPosts.data.query)
                 setSavedPost(res.data)
                 return { savedPost: res.data, allPosts: allPosts.data };
             } catch (error) {
@@ -61,6 +67,7 @@ const Profile = () => {
         },
         enabled: !!user
     })
+
     const handleClickMenu = (clickedMenu) => {
         if (clickedMenu === 'Library') {
             setLibrary(true)
@@ -85,7 +92,6 @@ const Profile = () => {
         } else if (clickedMenu === 'Followers') {
             axiosPublic.get(`/follower/${user?.uid}`)
                 .then((res) => {
-                    console.log(res.data);
                     setShowFollowers(true)
                     setFollowers(res.data)
                     setIShowFollowing(false)
@@ -93,11 +99,19 @@ const Profile = () => {
                     setMyPost(false)
                     setShowStats(false)
                 })
+        } else if (clickedMenu === 'Edit Profile') {
+            setShowFollowers(false)
+            setIShowFollowing(false)
+            setLibrary(false)
+            setMyPost(false)
+            setShowStats(false)
+            setIsEditProfile(true)
         }
         setClickedMenu(clickedMenu)
     }
     const likes = allPosts?.map(likes => likes.likes)
     const comments = allPosts?.map(likes => likes.totalComment)
+    const clicks = allPosts?.map(clicks => clicks.clicks)
 
     const series = [
         {
@@ -109,8 +123,8 @@ const Profile = () => {
             data: comments
         },
         {
-            name: 'Views',
-            data: [550, 44, 313, 716, 100]
+            name: 'Clicks',
+            data: clicks
         }
     ];
 
@@ -124,6 +138,10 @@ const Profile = () => {
         },
         stroke: {
             curve: 'smooth'
+        },
+        title: {
+            text: 'Posts Analytics',
+            align: 'left'
         },
 
     };
@@ -163,10 +181,17 @@ const Profile = () => {
                                 </div>
                             ) : showStats ? (
                                 <div className="">
-                                    <div className="rounded-md" id="chart">
-                                        <ReactApexChart options={options} series={series} type="area" height={350} />
+                                    <div className="mb-10">
+                                        <div className="rounded-md" id="chart">
+                                            <ReactApexChart options={options} series={series} type="area" height={350} />
+                                        </div>
+                                        <div id="html-dist"></div>
                                     </div>
-                                    <div id="html-dist"></div>
+
+                                    <div className="mt-3">
+
+                                        <ProfileVisitChart />
+                                    </div>
                                 </div>
                             ) : myPost ? (
                                 <div className="overflow-x-auto">
@@ -184,7 +209,7 @@ const Profile = () => {
                                         <tbody>
 
                                             {
-                                                allPosts?.map((posts, i) => <AllPost key={i} i={i} posts={posts} />)
+                                                allPosts?.map((posts, i) => <AllPost key={i} i={i} posts={posts} nonFollowersLikes={nonFollowersLikes} followersLiked={followersLiked} />)
                                             }
                                         </tbody>
                                     </table>
@@ -203,6 +228,8 @@ const Profile = () => {
                                         followers?.map((follows, i) => <Following key={i} follows={follows} />)
                                     }
                                 </div>
+                            ) : isEditProfile ? (
+                                <EditProfile />
                             ) : null
                         }
 
@@ -217,7 +244,7 @@ const Profile = () => {
                         <div className="p-3">
                             <h2 className="font-bold mb-3">{userInfo?.name}</h2>
                             <h2>{userInfo?.followersCount} <span className="cursor-pointer" onClick={() => handleClickMenu('Followers')}>Follower</span>  || {userInfo?.following?.length} <span className="cursor-pointer" onClick={() => handleClickMenu('Following')}>Following</span></h2>
-                            <h2 className="text-green-500 mt-6">Edit Profile</h2>
+                            <h2 onClick={() => handleClickMenu('Edit Profile')} className="text-green-500 cursor-pointer mt-6">Edit Profile</h2>
                             <div>
                                 <ul className="list-none mt-2 text-xl">
                                     {

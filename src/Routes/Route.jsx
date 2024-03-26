@@ -6,8 +6,8 @@ import AddNewPost from "../Components/Posts/AddNewPost";
 import Detail from "../Components/Posts/Detail";
 import Registration from "../Pages/Registration";
 import Profile from "../Components/Profile/Profile";
-import Following from "../Components/Profile/Following";
-import Paren from "../Components/Profile/Paren";
+import EditProfile from "../Components/Profile/EditProfile";
+import UserProfile from "../Components/Profile/UserProfile/UserProfile";
 export const router = createBrowserRouter(
     [
         {
@@ -27,9 +27,17 @@ export const router = createBrowserRouter(
                     element: <Detail/>
                 },
                 {
-                    path: '/profile',
+                    path: '/@/:userName?',
                     element: <Profile/>
                 },
+                {
+                    path: '/edit',
+                    element: <EditProfile/>
+                },
+                {
+                    path: '/u/:userId',
+                    element: <UserProfile/>
+                }
             ]
         },
         {

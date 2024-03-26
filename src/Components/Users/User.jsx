@@ -1,12 +1,13 @@
 import { useContext } from "react";
 import { AuthContext } from "../../Auth/AuthProvider/AuthProvider";
 import PropTypes from 'prop-types';
+import { Link } from "react-router-dom";
 
 const User = ({ users, handleFollowUser }) => {
     const { user } = useContext(AuthContext)
     const { name, followersCount, _id, followers, image, uid } = users;
     const filt = followers?.includes(user?.uid);
-    
+
 
     return (
         <div>
@@ -16,7 +17,9 @@ const User = ({ users, handleFollowUser }) => {
                         <img className="w-[3rem] h-[3rem] rounded-[3rem]" src={image} alt="" />
                     </div>
                     <div>
-                        <h2>{name}</h2>
+                        <Link to={`/u/${uid}`}>
+                            <h2>{name}</h2>
+                        </Link>
                         <p>{followersCount} followers</p>
                     </div>
                 </div>

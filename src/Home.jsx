@@ -75,6 +75,10 @@ const Home = () => {
             )
     }
 
+    const handleUpdatePostClicks = (postId) => {
+        axiosPublic.put(`/update/post/clicks/${postId}`).then(res => console.log(res.data))
+    }
+
 
 
 
@@ -115,6 +119,7 @@ const Home = () => {
                                 key={i}
                                 post={post}
                                 handleSavePost={handleSavePost}
+                                handleUpdatePostClicks={handleUpdatePostClicks}
                             />
                             )
                         )

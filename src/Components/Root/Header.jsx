@@ -17,7 +17,7 @@ const Header = () => {
                                 {userInfo?.name}
                             </summary>
                             <ul className="p-2 bg-base-100 rounded-t-none">
-                                <li><NavLink to='/profile'>Profile</NavLink></li>
+                                <li><NavLink to={`/@/${userInfo?.name}`}>Profile</NavLink></li>
                             </ul>
                         </details>
                     </li>

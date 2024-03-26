@@ -25,17 +25,21 @@ const Detail = () => {
     const [commentLoading, setCommentLoading] = useState(true)
     const [indexId, setIndexId] = useState('')
     const [cmtReplyText, setCmtReplyText] = useState('')
+    const [followingLikes, setFollowingLikes] = useState([])
     const { refetch } = useQuery({
         queryKey: ["data"],
         queryFn: async () => {
+            if(!user) return null
             const res = await axiosPublic.post(`/get/post`, dataToSend);
             const cmt = await axiosPublic.get(`/comments/${id}`);
+            
             setGetComments(cmt.data)
             setCommentLoading(false)
             setPost(res.data);
             setIsLoading(false)
             return res.data;
         },
+        enabled: !!user
     });
 
     const { title, content, likes, likerIds, totalComment } = post;
@@ -63,7 +67,7 @@ const Detail = () => {
     }
 
     const handleSubmitCommentReplies = (commentId) => {
-        const dataToUpdate = {userName: user?.email, reply: cmtReplyText}
+        const dataToUpdate = { userName: user?.email, reply: cmtReplyText }
         axiosPublic.put(`/comment-replies/${commentId}`, dataToUpdate).then(() => refetch())
     }
 
@@ -114,7 +118,7 @@ const Detail = () => {
                         </div>
                         <div className="skeleton h-32 w-full"></div>
                     </div>
-            ) : getComments?.map((cmt, i) => <Comments key={i} handleCommentLikes={handleCommentLikes} handleSubmitCommentReplies={handleSubmitCommentReplies} handleCommentReply={handleCommentReply} indexId={indexId} index={i} getCommentId={getCommentId} cmts={cmt}></Comments>)
+                ) : getComments?.map((cmt, i) => <Comments key={i} handleCommentLikes={handleCommentLikes} handleSubmitCommentReplies={handleSubmitCommentReplies} handleCommentReply={handleCommentReply} indexId={indexId} index={i} getCommentId={getCommentId} cmts={cmt}></Comments>)
             }
         </div>
     );
@@ -131,6 +135,17 @@ const Detail = () => {
                             <h2>Shi Ji Ping</h2>
                             <h2>5 min read - Jan 28, 2024</h2>
                         </div>
+                    </div>
+                    <div className="flex mt-3 gap-3 items-center ">
+
+                        {
+                            followingLikes?.map((likes, i) =>
+                                <div key={i} className="">
+                                    <img className="w-[3rem] h-[3rem] rounded-[3rem]" src={likes.image} alt="" />
+                                </div>
+                            )
+                        }
+                        <span>  likes this post</span>
                     </div>
                     <div className="border-t border-b border-gray-500 p-3 mt-4">
                         <div className='flex justify-between'>
