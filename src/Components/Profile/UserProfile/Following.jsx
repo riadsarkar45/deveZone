@@ -4,15 +4,16 @@ import { useContext, useState } from 'react';
 import { FaEllipsisH } from 'react-icons/fa';
 import { AuthContext } from '../../../Auth/AuthProvider/AuthProvider';
 import { UserContext } from '../../../Global/User';
+import { Link } from 'react-router-dom';
 
-const Following = ({ users }) => {
-    const { image, name, followers } = users || {};
+const Following = ({ users, handleSeeOtherProfile }) => {
+    const { image, name, followers, following, uid } = users || {};
     const { user } = useContext(AuthContext)
     const [open, setOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
     const { userInfo } = useContext(UserContext)
     const isFollowing = followers && followers?.includes(user?.uid);
-    const check = followers && followers?.includes(userInfo.uid)
+    const check = following && following?.includes(userInfo.uid)
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
         setOpen((previousOpen) => !previousOpen);
@@ -25,10 +26,11 @@ const Following = ({ users }) => {
             <div className='flex items-center justify-between mt-3'>
                 <div className='flex items-center gap-3'>
                     <img className='w-[3rem] h-[3rem] rounded-[3rem]' src={image} alt="" />
-                    <h2>{name}</h2>
+                        <h2 className='cursor-pointer' onClick={() => handleSeeOtherProfile(uid)}>{name}</h2>
+                    
                 </div>
 
-                <span onClick={handleClick}><FaEllipsisH /></span>
+                <span className='hover:bg-gray-500 hover:bg-opacity-20 p-2 rounded-sm' onClick={handleClick}><FaEllipsisH /></span>
             </div>
             <Popper id={id} open={open} anchorEl={anchorEl} transition>
                 {({ TransitionProps }) => (
@@ -58,6 +60,7 @@ const Following = ({ users }) => {
 
 Following.propTypes = {
     users: PropTypes.object,
+    handleSeeOtherProfile: PropTypes.func,
 
 };
 

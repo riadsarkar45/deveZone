@@ -12,7 +12,6 @@ import AllPost from "./AllPost";
 import { UserContext } from "../../Global/User";
 import Following from "./Following";
 import EditProfile from "./EditProfile";
-import ProfileVisitChart from "./ProfileVisitChart";
 const profileMenu = [
     {
         name: 'Library',
@@ -48,6 +47,8 @@ const Profile = () => {
     const [followersLiked, setFollowersLiked] = useState([])
     const [nonFollowersLikes, setNonFollowersLikes] = useState({})
     const [isEditProfile, setIsEditProfile] = useState(false)
+    const[isEditing, setIsEditing] = useState('')
+
     const { refetch } = useQuery({
         queryKey: ["posts"],
         queryFn: async () => {
@@ -112,7 +113,6 @@ const Profile = () => {
     const likes = allPosts?.map(likes => likes.likes)
     const comments = allPosts?.map(likes => likes.totalComment)
     const clicks = allPosts?.map(clicks => clicks.clicks)
-
     const series = [
         {
             name: 'Likes',
@@ -145,6 +145,12 @@ const Profile = () => {
         },
 
     };
+
+
+
+    const handleEdit = (id) => {
+        setIsEditing(id)
+    }
 
     useEffect(() => {
         if (clickedMenu === 'Library') {
@@ -188,13 +194,9 @@ const Profile = () => {
                                         <div id="html-dist"></div>
                                     </div>
 
-                                    <div className="mt-3">
-
-                                        <ProfileVisitChart />
-                                    </div>
                                 </div>
                             ) : myPost ? (
-                                <div className="overflow-x-auto">
+                                <div className="overflow-x-auto max-w-[50rem]">
                                     <table className="table table-zebra">
                                         {/* head */}
                                         <thead>
@@ -202,6 +204,8 @@ const Profile = () => {
                                                 <th></th>
                                                 <th>Title</th>
                                                 <th>Category</th>
+                                                <th>Desc</th>
+
                                                 <th>Likes</th>
                                                 <th>Actions</th>
                                             </tr>
@@ -209,7 +213,17 @@ const Profile = () => {
                                         <tbody>
 
                                             {
-                                                allPosts?.map((posts, i) => <AllPost key={i} i={i} posts={posts} nonFollowersLikes={nonFollowersLikes} followersLiked={followersLiked} />)
+                                                allPosts?.map((posts, i) =>
+                                                    <AllPost
+                                                        key={i}
+                                                        i={i}
+                                                        posts={posts}
+                                                        nonFollowersLikes={nonFollowersLikes}
+                                                        followersLiked={followersLiked}
+                                                        handleEdit={handleEdit}
+                                                        isEditing = {isEditing}
+                                                    />
+                                                )
                                             }
                                         </tbody>
                                     </table>

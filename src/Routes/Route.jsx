@@ -27,7 +27,7 @@ export const router = createBrowserRouter(
                     element: <Detail/>
                 },
                 {
-                    path: '/@/:userName?',
+                    path: '/@/:userName/:?',
                     element: <Profile/>
                 },
                 {

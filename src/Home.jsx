@@ -2,7 +2,6 @@ import { useContext, useEffect, useState } from "react";
 import Categories from "./Categories";
 import Post from "./Components/Posts/Post";
 import useAxiosPublic from "./Hooks/useAxiosPublic";
-import { useQuery } from "@tanstack/react-query";
 import { AuthContext } from "./Auth/AuthProvider/AuthProvider";
 import toast from "react-hot-toast";
 import Users from "./Components/Users/Users";
@@ -79,7 +78,7 @@ const Home = () => {
         axiosPublic.put(`/update/post/clicks/${postId}`).then(res => console.log(res.data))
     }
 
-
+    
 
 
 
@@ -88,7 +87,7 @@ const Home = () => {
 
             <div className="flex justify-between w-[90%] m-auto">
 
-                <div className="bg-gradient-to-r  min-h-screen w-[75%] p-2 border-r-2">
+                <div className="bg-gradient-to-r min-h-screen w-[75%] p-2 border-r-2">
                     <div className="flex gap-3 p-3 border-b border-gray-300 items-center">
                         <span className="text-2xl cursor-pointer" onClick={() => document.getElementById('my_modal_1').showModal()}><CiCirclePlus /></span>
                         {
@@ -128,7 +127,7 @@ const Home = () => {
                 </div>
 
 
-                <div className="hidden md:block w-[24rem]  h-full overflow-y-auto overscroll-none">
+                <div className="hidden md:block w-[24rem] shadow-sm h-full overflow-y-auto overscroll-none">
                     <Users></Users>
                 </div>
             </div>

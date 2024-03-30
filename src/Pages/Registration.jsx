@@ -14,16 +14,12 @@ const Registration = () => {
     const axiosPublic = useAxiosPublic();
     const [steps, setSteps] = useState(1)
     const [percentage, setPercentage] = useState(0)
-    const [categories, setCategories] = useState([])
-    const [selectedCategory, setSelectedCategory] = useState([]);
-    const [suggestions] = useState([])
 
     const { refetch } = useQuery({
         queryKey: ["posts"],
         queryFn: async () => {
             try {
                 const res = await axiosPublic.get(`/all-topics`);
-                setCategories(res.data)
                 return res.data;
             } catch (error) {
                 console.error("Error fetching posts:", error);
@@ -34,7 +30,6 @@ const Registration = () => {
 
 
     const handleCreateUser = async (e) => {
-        setSteps(2)
         e.preventDefault();
         const form = e.target;
         const formData = new FormData(form);
@@ -88,17 +83,6 @@ const Registration = () => {
         }
     }
 
-    const handleSetTopic = () => {
-        axiosPublic.put(`/update-user-topic/${user?.uid}`, selectedCategory).then(res => console.log(res.data))
-    }
-
-    const toggleTagSelection = (tag) => {
-        if (selectedCategory.includes(tag)) {
-            setSelectedCategory(selectedCategory.filter(selectedTag => selectedTag !== tag));
-        } else {
-            setSelectedCategory([...selectedCategory, tag]);
-        }
-    };
 
 
     return (

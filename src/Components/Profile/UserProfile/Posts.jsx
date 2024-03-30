@@ -3,7 +3,7 @@ import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd';
 import { FaEllipsisH } from 'react-icons/fa';
 import DOMPurify from 'dompurify';
 
-const Posts = ({ post }) => {
+const Posts = ({ post, isShowFollowers }) => {
     const { title, content, category } = post
     const words = content.split(/\s+/);
 
@@ -16,6 +16,7 @@ const Posts = ({ post }) => {
     const sanitizedContent = DOMPurify.sanitize(truncatedContent);
     return (
         <div>
+            
             <div className="border-b-2 shadow-sm p-2 mt-4 border-gray-200 mb-3">
                 <h2 className="text-xl font-bold">{title}</h2>
                 <div className='mb-5' dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
@@ -38,6 +39,7 @@ const Posts = ({ post }) => {
 
 Posts.propTypes = {
     post: PropTypes.object,
+    isShowFollowers: PropTypes.bool,
 
 };
 

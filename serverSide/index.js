@@ -300,9 +300,11 @@ async function run() {
             const user = await users.findOne({ uid: userId })
             const findPost = await posts.find({ uid: userId }).toArray()
             const following = user.following
-            const getFollowedUsers = await users.find({ uid: { $in: following, $ne: userId } }).limit(4).toArray();
+            const followers = user.followers
+            const getFollowedUsers = await users.find({ uid: { $in: following, $ne: userId } }).toArray();
+            const getFollowers = await users.find({ uid: { $in: followers, $ne: userId } }).toArray();
 
-            res.send({ user, findPost, getFollowedUsers })
+            res.send({ user, findPost, getFollowedUsers, getFollowers })
         })
 
 
@@ -367,6 +369,30 @@ async function run() {
                 $inc: { likes: 1 }
             }
             const update = await posts.updateOne(query, updateLikes)
+            res.send(update)
+        })
+
+        app.put('/increase-profile-visit/:uid', async (req, res) => {
+            const updateVisits = {
+                $push: { visits: 1 }
+            }
+            const update = await users.updateOne({ uid: req.params.uid }, updateVisits)
+            res.send(update)
+        })
+
+        app.put('/update-user-profile/:uid', async (req, res) => {
+            const userId = req.params.uid;
+            const data = req.body
+            const updateUserInfo = {
+                $set: {
+                    name: data.userName,
+                    email: data.userEmail,
+                    cover: data.imgUrl,
+                    height: data.height,
+                    opacity: data.opacity
+                }
+            }
+            const update = await users.updateOne({ uid: userId }, updateUserInfo)
             res.send(update)
         })
 
