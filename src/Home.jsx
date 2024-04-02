@@ -8,6 +8,7 @@ import Users from "./Components/Users/Users";
 import { CiCirclePlus } from "react-icons/ci";
 import IsLoading from "./Hooks/IsLoading";
 import AllTopics from "./Pages/AllTopics";
+import Polls from "./Components/Posts/Polls";
 
 const Home = () => {
     const axiosPublic = useAxiosPublic();
@@ -17,7 +18,8 @@ const Home = () => {
     const [isSaved, setIsSaved] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
     const [categories, setCategories] = useState([])
-
+    const [polls, setPolls] = useState([])
+    const [voteResult, setVoteResult] = useState([])
 
 
     useEffect(() => {
@@ -68,9 +70,16 @@ const Home = () => {
     const gePosts = (cat) => {
         setSelectedCategory(cat)
         axiosPublic.post(`/get/post/with/category/${cat}/${user?.uid}`)
-            .then(res =>
+            .then(res => {
+                if (cat === 'Following') {
+                    setPosts(res.data.postsFromFollowingUsers)
+                    setPolls(res.data.getPoll)
+                    setVoteResult(res.data.getVoteCollections)
+                    return <></>;
+                }
                 setPosts(res.data),
-                setIsLoading(false),
+                    setIsLoading(false)
+            }
             )
     }
 
@@ -78,7 +87,7 @@ const Home = () => {
         axiosPublic.put(`/update/post/clicks/${postId}`).then(res => console.log(res.data))
     }
 
-    
+
 
 
 
@@ -114,17 +123,38 @@ const Home = () => {
                         isLoading ? (
                             <IsLoading />
                         ) : (
-                            posts?.map((post, i) => <Post
-                                key={i}
-                                post={post}
-                                handleSavePost={handleSavePost}
-                                handleUpdatePostClicks={handleUpdatePostClicks}
-                            />
-                            )
+                            <div>
+                                {
+                                    posts?.map((post, i) => <Post
+                                        key={i}
+                                        post={post}
+                                        handleSavePost={handleSavePost}
+                                        handleUpdatePostClicks={handleUpdatePostClicks}
+                                        polls={polls}
+                                    />
+                                    )
+                                }
+                                <div>
+                                    {
+                                        selectedCategory === 'Following' ? (
+                                            polls?.map((poll, i) => <Polls
+                                                key={i}
+                                                poll={poll}
+                                                voteResult={voteResult}
+                                            />
+                                            )
+                                        ) : null
+
+                                    }
+                                </div>
+
+                            </div>
                         )
 
                     }
                 </div>
+
+
 
 
                 <div className="hidden md:block w-[24rem] shadow-sm h-full overflow-y-auto overscroll-none">

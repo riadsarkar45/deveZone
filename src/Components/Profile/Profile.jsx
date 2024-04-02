@@ -47,7 +47,11 @@ const Profile = () => {
     const [followersLiked, setFollowersLiked] = useState([])
     const [nonFollowersLikes, setNonFollowersLikes] = useState({})
     const [isEditProfile, setIsEditProfile] = useState(false)
-    const[isEditing, setIsEditing] = useState('')
+    const [isCreatePoll, setIsCreatePoll] = useState(false)
+    const [isEditing, setIsEditing] = useState('')
+    const [totalInput, setTotalInput] = useState([])
+    const [opt, setOptions] = useState()
+    const [pollTitle, setPollTitle] = useState('')
 
     const { refetch } = useQuery({
         queryKey: ["posts"],
@@ -158,8 +162,72 @@ const Profile = () => {
         }
     }, [clickedMenu])
 
+    const handlePolls = () => {
+        setIsCreatePoll(bool => !bool)
+    }
+
+    const handleAddOptions = () => {
+        const words = opt.split(',').map(word => word.trim());
+        setTotalInput(words);
+    }
+
+    const handleGetOptions = (text) => {
+        setOptions(text)
+    }
+
+    const handleGetPollTitle = (title) => {
+        setPollTitle(title)
+    }
+
+    const handleSubmitPoll = () => {
+        const dataToInsert = { pollTitle, uid:userInfo?.uid, options: totalInput.map(text => ({ text: text })) }
+        axiosPublic.post(`/create-poll`, dataToInsert).then(res => console.log(res.data))
+    }
+
+
     return (
         <div className="w-[90%] m-auto mt-10">
+            {
+                isCreatePoll ? (
+                    <div className="fixed inset-0 flex items-center justify-center z-50">
+                        <div data-popover="popover" className="relative p-4 bg-gray-100 rounded-lg shadow-lg w-[52rem] max-h-screen overflow-y-auto text-blue-gray-500">
+                            <button
+                                onClick={handlePolls}
+                                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                            <div className="mt-3">
+                                <h2 className="border-b p-2 border-gray-300 text-2xl">Create Polls</h2>
+                                <input onChange={e => handleGetPollTitle(e.target.value)} className="w-full border border-gray-200 p-2 mt-4 rounded-md" placeholder="Enter Poll Title" type="text" />
+                            </div>
+                            <div className="mt-3 flex items-center">
+
+                                <input onChange={e => handleGetOptions(e.target.value)} className="w-full border border-r-0 border-gray-200 p-3  rounded-l-md" placeholder="Use comma for multiple options" type="text" />
+                                <button onClick={handleAddOptions} className="p-2 border border-gray-300 bg-gray-200 hover:bg-green-500 font-bold text-xl w-[4rem] rounded-r-md">+</button>
+                            </div>
+                            <div className="mt-4">
+                                <button onClick={handleSubmitPoll} className="btn btn-sm btn-outline">Submit</button>
+                            </div>
+                            <div className="mt-3 items-center">
+
+                                {
+                                    totalInput?.map((opt, i) =>
+                                        <div key={i}>
+                                            <h2 className="bg-blue-300 rounded-md border border-blue-500 p-2 mt-2 bg-opacity-20">{opt}</h2>
+                                        </div>
+
+                                    )
+                                }
+
+                            </div>
+                        </div>
+                    </div>
+
+                ) : null
+            }
             <div className="flex gap-3 ">
                 <div className="flex-1 gap-4 items-center bg-gray-50 shadow-sm">
                     <div>
@@ -221,7 +289,7 @@ const Profile = () => {
                                                         nonFollowersLikes={nonFollowersLikes}
                                                         followersLiked={followersLiked}
                                                         handleEdit={handleEdit}
-                                                        isEditing = {isEditing}
+                                                        isEditing={isEditing}
                                                     />
                                                 )
                                             }
@@ -257,8 +325,11 @@ const Profile = () => {
                         </div>
                         <div className="p-3">
                             <h2 className="font-bold mb-3">{userInfo?.name}</h2>
-                            <h2>{userInfo?.followersCount} <span className="cursor-pointer" onClick={() => handleClickMenu('Followers')}>Follower</span>  || {userInfo?.following?.length} <span className="cursor-pointer" onClick={() => handleClickMenu('Following')}>Following</span></h2>
+                            <h2>{userInfo?.followersCount} <span className="cursor-pointer" onClick={() => handleClickMenu('Followers')}>Follower</span>
+                                || {userInfo?.following?.length}
+                                <span className="cursor-pointer" onClick={() => handleClickMenu('Following')}>Following</span></h2>
                             <h2 onClick={() => handleClickMenu('Edit Profile')} className="text-green-500 cursor-pointer mt-6">Edit Profile</h2>
+                            <h2 onClick={() => handlePolls()} className="text-green-500 cursor-pointer mt-6">Create Poll</h2>
                             <div>
                                 <ul className="list-none mt-2 text-xl">
                                     {

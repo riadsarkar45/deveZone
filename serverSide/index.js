@@ -44,6 +44,8 @@ async function run() {
         const saved = database.collection("saved")
         const comments = database.collection("comments")
         const categories = database.collection("categories")
+        const livePolls = database.collection("livePolls")
+        const voteCollection = database.collection("voteCollection")
 
         app.get('/users/:uid', async (req, res) => {
             const userId = req.params.uid;
@@ -70,6 +72,12 @@ async function run() {
             res.send(result)
         })
 
+        app.post('/get-poll-result/:pollId', async (req, res) => {
+            const pollId = req.params.pollId;
+            const polls = await voteCollection.find({ pollId: pollId }).toArray();
+            res.send(polls)
+        })
+
 
         app.post('/get/post/with/category/:cat/:uid', async (req, res) => {
             try {
@@ -79,7 +87,10 @@ async function run() {
                     const user = await users.findOne({ uid: userId });
                     const follow = user.following;
                     const postsFromFollowingUsers = await posts.find({ uid: { $in: follow } }).toArray();
-                    return res.status(200).json(postsFromFollowingUsers);
+                    const getPoll = await livePolls.find({ uid: { $in: follow } }).toArray();
+                    const mapGetPoll = getPoll.flatMap(opt => opt.option)
+                    const getVoteCollections = await voteCollection.find({ options: { $in: mapGetPoll } }).toArray();
+                    return res.status(200).json({ postsFromFollowingUsers, getPoll, getVoteCollections });
                 } else if (postCat === 'For You') {
                     const user = await users.findOne({ uid: userId });
                     const topics = user.selectedTopics || [];
@@ -95,6 +106,43 @@ async function run() {
                 return res.status(500).json({ msg: 'Internal Server Error' });
             }
         });
+
+        app.post('/create-poll', async (req, res) => {
+            try {
+                const dataToInsert = req.body;
+                const result = await livePolls.insertOne(dataToInsert);
+                res.send(result);
+            } catch (error) {
+                console.error('Error creating poll:', error);
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        });
+
+        app.put('/submit-vote/:id', async (req, res) => {
+            const id = req.params.id;
+            const dataToSend = req.body;
+            const { options } = req.body;
+            console.log(id);
+
+            try {
+                const query = { options: options };
+
+                const find = await voteCollection.findOne({ options: options });
+
+                if (find) {
+                    const result = await voteCollection.updateOne(query, { $inc: { votes: 1 } });
+                    res.send(result);
+                } else {
+                    await voteCollection.insertOne(dataToSend);
+                    res.send({ message: 'New vote inserted.' });
+                }
+            } catch (error) {
+                console.error('Error submitting vote:', error);
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        });
+
+
 
 
         app.get('/get/post/default/:cat/:uid', async (req, res) => {
