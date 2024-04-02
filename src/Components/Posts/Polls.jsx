@@ -1,22 +1,46 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../../Global/User";
 import useAxiosPublic from "../../Hooks/useAxiosPublic";
+import { useQuery } from "@tanstack/react-query";
 const Polls = ({ poll }) => {
-    const { pollTitle, options, _id } = poll || {};
+    const { pollTitle, options, _id, } = poll || {};
     const { userInfo } = useContext(UserContext)
     const axiosPublic = useAxiosPublic()
     const [showResult, setShowResult] = useState(false)
     const [result, setResult] = useState([])
     const [isLoading, setIsLoading] = useState(true)
+
+
+    const { refetch } = useQuery({
+        queryKey: ["posts"],
+        queryFn: async () => {
+            try {
+                const res = await axiosPublic.get(`/get-poll-result/${_id}`)
+                setResult(res.data)
+                setIsLoading(false)
+                return res.data;
+            } catch (error) {
+                console.error("Error fetching posts:", error);
+                return null;
+            }
+        },
+    })
+
+
     const handleSubmitVote = (options) => {
-        const dataToSend = { options, pollId: _id, userId: userInfo?.uid, votes: 1 }
-        axiosPublic.put(`/submit-vote/${_id}`, dataToSend).then(res => console.log(res.data))
+        const dataToSend = { options, pollId: _id, userId: userInfo?.uid, votes: 1, userIds: [userInfo?.uid] }
+        axiosPublic.put(`/submit-vote/${_id}/${userInfo?.uid}`, dataToSend).then(() => refetch())
     }
 
     const handleModal = () => {
         setShowResult(bool => !bool)
-        axiosPublic.post(`/get-poll-result/${_id}`).then((res) => { setResult(res.data), setIsLoading(false) })
+        axiosPublic.get(`/get-poll-result/${_id}`).then((res) => { setResult(res.data), setIsLoading(false) })
     }
+
+    const getVotedIds = result?.flatMap(ids => ids.userIds)
+    console.log(getVotedIds);
+    const isVoted = getVotedIds && getVotedIds?.includes(userInfo?.uid);
+    
     return (
         <div className="mt-6 mb-4 shadow-sm bg-opacity-30 p-2 border-b border-gray-300">
             {
@@ -85,11 +109,14 @@ const Polls = ({ poll }) => {
                                 </div>
                                 <div>
                                     <input
+
                                         onClick={() => handleSubmitVote(opt.text)}
                                         type="radio"
                                         id={`option-${i}`}
                                         name="vote-option"
                                         value={opt.text}
+                                        disabled={isVoted}
+                                        className={`${isVoted ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                                     />
                                 </div>
                             </div>

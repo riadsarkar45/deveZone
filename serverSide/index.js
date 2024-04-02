@@ -72,7 +72,7 @@ async function run() {
             res.send(result)
         })
 
-        app.post('/get-poll-result/:pollId', async (req, res) => {
+        app.get('/get-poll-result/:pollId', async (req, res) => {
             const pollId = req.params.pollId;
             const polls = await voteCollection.find({ pollId: pollId }).toArray();
             res.send(polls)
@@ -118,8 +118,9 @@ async function run() {
             }
         });
 
-        app.put('/submit-vote/:id', async (req, res) => {
+        app.put('/submit-vote/:id/:userId', async (req, res) => {
             const id = req.params.id;
+            const userId = req.params.userId;
             const dataToSend = req.body;
             const { options } = req.body;
             console.log(id);
@@ -130,7 +131,12 @@ async function run() {
                 const find = await voteCollection.findOne({ options: options });
 
                 if (find) {
-                    const result = await voteCollection.updateOne(query, { $inc: { votes: 1 } });
+                    const result = await voteCollection.updateOne(query,
+                        {
+                            $inc: { votes: 1 },
+                            $push: { userIds: userId }
+                        },
+                    );
                     res.send(result);
                 } else {
                     await voteCollection.insertOne(dataToSend);
