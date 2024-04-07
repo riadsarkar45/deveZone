@@ -83,7 +83,7 @@ const Polls = ({ poll }) => {
                                             id={`option-${i}`}
                                             name="vote-option"
                                             value={opt.text}
-                                            // disabled={result.some(vote => vote.userIds.includes(userInfo?.uid))}
+                                             disabled={result.some(vote => vote.userIds.includes(userInfo?.uid))}
                                             className={`${result.some(vote => vote.userIds.includes(userInfo?.uid)) ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                                         />
 

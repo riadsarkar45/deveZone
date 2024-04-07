@@ -4,9 +4,9 @@ import { UserContext } from '../../Global/User';
 
 const Followers = ({ user }) => {
     const { userInfo } = useContext(UserContext);
-    const { name, image, followers, following } = user || {};
-    const isFollowing = followers?.includes(userInfo?.uid);
-    const check = following && following?.includes(userInfo.uid)
+    const { name, image, followers, uid } = user || {};
+    const isCurrentUserFollowing = followers?.includes(userInfo?.uid);
+    const isCurrentUser = userInfo?.uid === uid;
     return (
         <div className=" p-2 mt-3 border-b border-gray-200">
             <div className='flex justify-between'>
@@ -15,11 +15,13 @@ const Followers = ({ user }) => {
                     <h2 className=' text-xl'>{name}</h2>
                 </div>
                 <div>
-                    {
-                        check ? (
-                            <button className='btn btn-sm btn-outline'>{isFollowing ? 'Following' : 'Follow'}</button>
-                        ) : <button className='btn btn-sm btn-outline'>You</button>
-                    }
+                    {isCurrentUser ? (
+                        <button className='btn btn-sm btn-outline'>You</button>
+                    ) : (
+                        <button className='btn btn-sm btn-outline'>
+                            {isCurrentUserFollowing ? 'Following' : 'Follow'}
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
