@@ -181,7 +181,7 @@ const Profile = () => {
 
     const handleSubmitPoll = () => {
         const dataToInsert = { pollTitle, uid:userInfo?.uid, options: totalInput.map(text => ({ text: text })) }
-        axiosPublic.post(`/create-poll`, dataToInsert).then(res => console.log(res.data))
+        axiosPublic.post(`/create-poll`, dataToInsert).then(() => refetch(), setIsCreatePoll(false))
     }
 
 

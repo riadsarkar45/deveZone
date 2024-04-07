@@ -119,11 +119,9 @@ async function run() {
         });
 
         app.put('/submit-vote/:id/:userId', async (req, res) => {
-            const id = req.params.id;
             const userId = req.params.userId;
             const dataToSend = req.body;
             const { options } = req.body;
-            console.log(id);
 
             try {
                 const query = { options: options };

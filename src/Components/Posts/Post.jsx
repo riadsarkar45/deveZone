@@ -5,7 +5,7 @@ import { AuthContext } from '../../Auth/AuthProvider/AuthProvider';
 import { FaRegSave } from "react-icons/fa";
 import PropTypes from 'prop-types';
 
-const Post = ({ post, handleSavePost, handleUpdatePostClicks, polls }) => {
+const Post = ({ post, handleSavePost, handleUpdatePostClicks }) => {
     const { user } = useContext(AuthContext)
     const { posterName, content, title, _id, category } = post;
 
