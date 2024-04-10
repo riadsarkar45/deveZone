@@ -5,22 +5,61 @@ import { AuthContext } from '../../Auth/AuthProvider/AuthProvider';
 import { FaRegSave } from "react-icons/fa";
 import PropTypes from 'prop-types';
 
-const Post = ({ post, handleSavePost, handleUpdatePostClicks }) => {
+const Post = ({ post, handleSubmit, handleSavePost, handleSaveCreatedList, handleUpdatePostClicks, handleCreateList, createList, setCreateList }) => {
     const { user } = useContext(AuthContext)
     const { posterName, content, title, _id, category } = post;
-
     const words = content.split(/\s+/);
-
     let truncatedContent = words.slice(0, 50).join(' ');
-
     if (words.length > 50) {
         truncatedContent += '...';
     }
-
     const sanitizedContent = DOMPurify.sanitize(truncatedContent);
 
     return (
         <div className="">
+
+            {
+                createList === _id ? (
+                    <div className="fixed inset-0 flex items-center justify-center z-50">
+                        <div data-popover="popover" className="relative p-4 bg-gray-100 rounded-lg shadow-lg w-[25.9rem] max-h-screen overflow-y-auto text-blue-gray-500">
+                            <button
+                                onClick={() => setCreateList(null)}
+                                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                            <div className="mt-1">
+                                <h2 className="border-b  border-gray-300 text-2xl">Create List</h2>
+                                <div className="mt-6">
+                                    <div>
+                                        <input name='head shot' type="radio" /> Head Shot1
+                                    </div>
+                                    <div>
+                                        <input name='head shot' type="radio" /> Head Shot2
+                                    </div>
+                                    <div>
+                                        <input name='head shot' type="radio" /> Head Shot3
+                                    </div>
+                                    <div>
+                                        <input name='head shot' type="radio" /> Head Shot4
+                                    </div>
+                                    <div className='flex shadow-sm gap-1 items-center border border-gray-300 mt-4'>
+                                        <div>
+                                            <input onChange={e => handleSaveCreatedList(e.target.value)} className='w-[18rem] p-2' type="text" />
+                                        </div>
+                                        <div>
+                                            <button onClick={() =>handleSubmit()} className=''><span>Create List</span></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : null
+            }
+
             <div className="shadow-sm bg-opacity-30 p-2 border-b border-gray-300">
                 <div className='flex justify-between'>
                     <div className="flex items-center gap-4">
@@ -35,6 +74,7 @@ const Post = ({ post, handleSavePost, handleUpdatePostClicks }) => {
 
                     <div>
                         <button onClick={() => handleSavePost(_id)} className="btn"><FaRegSave /></button>
+                        <button onClick={() => handleCreateList(_id)} className="btn"><FaRegSave /></button>
                     </div>
 
                 </div>
@@ -48,7 +88,7 @@ const Post = ({ post, handleSavePost, handleUpdatePostClicks }) => {
 
             </div>
 
-            
+
 
         </div>
     );
@@ -57,7 +97,12 @@ const Post = ({ post, handleSavePost, handleUpdatePostClicks }) => {
 Post.propTypes = {
     polls: PropTypes.array,
     post: PropTypes.object,
+    createList: PropTypes.string,
+    handleSubmit: PropTypes.func,
+    setCreateList: PropTypes.func,
     handleSavePost: PropTypes.func,
+    handleCreateList: PropTypes.func,
+    handleSaveCreatedList: PropTypes.func,
     handleUpdatePostClicks: PropTypes.func,
 }
 

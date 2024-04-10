@@ -9,10 +9,12 @@ import { CiCirclePlus } from "react-icons/ci";
 import IsLoading from "./Hooks/IsLoading";
 import AllTopics from "./Pages/AllTopics";
 import Polls from "./Components/Posts/Polls";
+import { UserContext } from "./Global/User";
 
 const Home = () => {
     const axiosPublic = useAxiosPublic();
     const { user } = useContext(AuthContext)
+    const {userInfo} = useContext(UserContext)
     const [selectedCategory, setSelectedCategory] = useState('For You')
     const [posts, setPosts] = useState([])
     const [isSaved, setIsSaved] = useState(null)
@@ -20,6 +22,8 @@ const Home = () => {
     const [categories, setCategories] = useState([])
     const [polls, setPolls] = useState([])
     const [voteResult, setVoteResult] = useState([])
+    const [createList, setCreateList] = useState("")
+    const [listName, setListName] = useState('')
 
 
     useEffect(() => {
@@ -52,7 +56,7 @@ const Home = () => {
         if (isSaved) {
             toast.loading('Saving...')
         }
-        const dataToSave = { userId: user?.uid, postId: postId }
+        const dataToSave = { userId: user?.uid, postId: [postId], listName: listName }
         axiosPublic.post('/save-post', dataToSave)
             .then((res) => {
                 if (res.data.acknowledged) {
@@ -64,6 +68,19 @@ const Home = () => {
 
                 }
             })
+    }
+
+    const handleCreateList = (postId) =>{
+        setCreateList(postId);
+    }
+
+    const handleSaveCreatedList = (listName) => {
+        setListName(listName)
+    }
+
+    const handleSubmit = () => {
+        const dataToInsert = {userInfo:userInfo?.uid, listName: listName}
+        axiosPublic.post(`/create-list/${userInfo?.uid}`, dataToInsert).then(()=> {toast.success('List Created')})
     }
 
 
@@ -128,7 +145,12 @@ const Home = () => {
                                     posts?.map((post, i) => <Post
                                         key={i}
                                         post={post}
+                                        createList={createList}
+                                        handleSubmit={handleSubmit}
+                                        setCreateList={setCreateList}
                                         handleSavePost={handleSavePost}
+                                        handleCreateList={handleCreateList}
+                                        handleSaveCreatedList = {handleSaveCreatedList}
                                         handleUpdatePostClicks={handleUpdatePostClicks}
                                         polls={polls}
                                     />

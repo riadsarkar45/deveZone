@@ -46,6 +46,7 @@ async function run() {
         const categories = database.collection("categories")
         const livePolls = database.collection("livePolls")
         const voteCollection = database.collection("voteCollection")
+        const savedList = database.collection("savedList")
 
         app.get('/users/:uid', async (req, res) => {
             const userId = req.params.uid;
@@ -184,16 +185,25 @@ async function run() {
         })
 
         app.post('/save-post', async (req, res) => {
-            const dataToInsert = req.body;
-            const query = { postId: dataToInsert.postId, userId: dataToInsert.userId };
-            const findSavedPost = await saved.findOne(query)
-            if (findSavedPost) {
-                return res.send({ msg: 'Post already saved' })
+            try {
+                const dataToInsert = req.body;
+                const query = { userId: dataToInsert.userId, listName: dataToInsert.listName };
+                
+                const findSavedPost = await saved.findOne(query);
+        
+                if (findSavedPost) {
+                    await saved.updateOne(query, { $push: { postId: { $each: dataToInsert.postId } } });
+                    return res.send({ msg: 'Post saved' });
+                }
+        
+                const result = await saved.insertOne(dataToInsert);
+                res.send(result);
+            } catch (error) {
+                console.error(error);
+                res.status(500).send({ error: 'Internal Server Error' });
             }
-
-            const result = await saved.insertOne(dataToInsert)
-            res.send(result)
-        })
+        });
+        
 
         app.post('/post-comments', async (req, res) => {
             const dataToInsert = req.body;
@@ -309,6 +319,16 @@ async function run() {
                 res.status(500).send("Internal Server Error");
             }
         });
+
+
+        // create saved list api
+
+        app.post('/create-list/:uid', async (req, res) => {
+            const dataToInsert = req.body;
+            const result = await savedList.insertOne(dataToInsert);
+            res.send(result)
+
+        })
 
 
 

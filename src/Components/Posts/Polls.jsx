@@ -8,7 +8,7 @@ const Polls = ({ poll }) => {
     const { userInfo } = useContext(UserContext)
     const axiosPublic = useAxiosPublic()
     const [result, setResult] = useState([])
-    const [isLoading, setIsLoading] = useState(true)
+    // const [isLoading, setIsLoading] = useState(true)
 
     const { refetch } = useQuery({
         queryKey: ["posts"],
@@ -16,7 +16,7 @@ const Polls = ({ poll }) => {
             try {
                 const res = await axiosPublic.get(`/get-poll-result/${_id}`)
                 setResult(res.data)
-                setIsLoading(false)
+                // setIsLoading(false)
                 return res.data;
             } catch (error) {
                 console.error("Error fetching posts:", error);

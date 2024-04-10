@@ -7,12 +7,10 @@ import { AuthContext } from "../../../Auth/AuthProvider/AuthProvider";
 import { MarkEmailRead } from "@mui/icons-material";
 import SelectedCategory from "./SelectedCategory";
 import Posts from "./Posts";
-import Following from "./Following";
 import Followers from "../Followers";
 const UserProfile = () => {
     const [users, setUsers] = useState([])
     const [posts, setPosts] = useState([])
-    const [following, setFollowing] = useState([])
     const [followers, setFollowers] = useState([])
     const axiosPublic = useAxiosPublic();
     const { userId } = useParams()
@@ -25,7 +23,6 @@ const UserProfile = () => {
             if (!user) return null
             const res = await axiosPublic.get(`/userprofile/${userId}`)
             setFollowers(res.data.getFollowers)
-            setFollowing(res.data.getFollowedUsers);
             setPosts(res.data.findPost);
             setUsers(res.data.user);
             setIsLoading(false)
@@ -38,17 +35,7 @@ const UserProfile = () => {
         refetch();
     }, [refetch])
 
-    const handleSeeOtherProfile = (userId) => {
-        axiosPublic.get(`/userprofile/${userId}`)
-            .then((res) => {
-                setFollowers(res.data.getFollowers)
-                setFollowing(res.data.getFollowedUsers)
-                setPosts(res.data.findPost)
-                setUsers(res.data.user)
-                setIsLoading(false)
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            })
-    }
+   
 
     const showFollowers = () => {
         setShowFollowers(prevState => !prevState);
