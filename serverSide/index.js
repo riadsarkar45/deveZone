@@ -188,14 +188,14 @@ async function run() {
             try {
                 const dataToInsert = req.body;
                 const query = { userId: dataToInsert.userId, listName: dataToInsert.listName };
-                
+
                 const findSavedPost = await saved.findOne(query);
-        
+
                 if (findSavedPost) {
                     await saved.updateOne(query, { $push: { postId: { $each: dataToInsert.postId } } });
                     return res.send({ msg: 'Post saved' });
                 }
-        
+
                 const result = await saved.insertOne(dataToInsert);
                 res.send(result);
             } catch (error) {
@@ -203,7 +203,7 @@ async function run() {
                 res.status(500).send({ error: 'Internal Server Error' });
             }
         });
-        
+
 
         app.post('/post-comments', async (req, res) => {
             const dataToInsert = req.body;
@@ -329,6 +329,15 @@ async function run() {
             res.send(result)
 
         })
+
+        app.get('/created-lists/:uid', async (req, res) => {
+            const uid = req.params.uid;
+            const lists = await savedList.find({userId: uid}).toArray();
+            res.send(lists)
+
+        })
+
+        
 
 
 

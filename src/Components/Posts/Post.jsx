@@ -5,7 +5,7 @@ import { AuthContext } from '../../Auth/AuthProvider/AuthProvider';
 import { FaRegSave } from "react-icons/fa";
 import PropTypes from 'prop-types';
 
-const Post = ({ post, handleSubmit, handleSavePost, handleSaveCreatedList, handleUpdatePostClicks, handleCreateList, createList, setCreateList }) => {
+const Post = ({ post, allList, handleSubmit, handleSavePost, handleSaveCreatedList, handleUpdatePostClicks, handleCreateList, createList, setCreateList }) => {
     const { user } = useContext(AuthContext)
     const { posterName, content, title, _id, category } = post;
     const words = content.split(/\s+/);
@@ -14,6 +14,8 @@ const Post = ({ post, handleSubmit, handleSavePost, handleSaveCreatedList, handl
         truncatedContent += '...';
     }
     const sanitizedContent = DOMPurify.sanitize(truncatedContent);
+
+
 
     return (
         <div className="">
@@ -31,26 +33,24 @@ const Post = ({ post, handleSubmit, handleSavePost, handleSaveCreatedList, handl
                                 </svg>
                             </button>
                             <div className="mt-1">
-                                <h2 className="border-b  border-gray-300 text-2xl">Create List</h2>
+                                <small className="border-b  border-gray-300">Create List</small>
                                 <div className="mt-6">
-                                    <div>
-                                        <input name='head shot' type="radio" /> Head Shot1
-                                    </div>
-                                    <div>
-                                        <input name='head shot' type="radio" /> Head Shot2
-                                    </div>
-                                    <div>
-                                        <input name='head shot' type="radio" /> Head Shot3
-                                    </div>
-                                    <div>
-                                        <input name='head shot' type="radio" /> Head Shot4
-                                    </div>
+                                    {
+                                        allList?.map((lists, i) => {
+                                            return (
+                                                <div key={i}>
+                                                    <input  onClick={() => handleSavePost(_id, lists.listName)} name='head shot' type="radio" /> {lists.listName}
+                                                </div>
+                                            )
+                                        })
+                                    }
+
                                     <div className='flex shadow-sm gap-1 items-center border border-gray-300 mt-4'>
                                         <div>
                                             <input onChange={e => handleSaveCreatedList(e.target.value)} className='w-[18rem] p-2' type="text" />
                                         </div>
                                         <div>
-                                            <button onClick={() =>handleSubmit()} className=''><span>Create List</span></button>
+                                            <button onClick={() => handleSubmit()} className=''><span>Create List</span></button>
                                         </div>
                                     </div>
                                 </div>
@@ -73,7 +73,6 @@ const Post = ({ post, handleSubmit, handleSavePost, handleSaveCreatedList, handl
                     </div>
 
                     <div>
-                        <button onClick={() => handleSavePost(_id)} className="btn"><FaRegSave /></button>
                         <button onClick={() => handleCreateList(_id)} className="btn"><FaRegSave /></button>
                     </div>
 
@@ -96,6 +95,7 @@ const Post = ({ post, handleSubmit, handleSavePost, handleSaveCreatedList, handl
 
 Post.propTypes = {
     polls: PropTypes.array,
+    allList: PropTypes.array,
     post: PropTypes.object,
     createList: PropTypes.string,
     handleSubmit: PropTypes.func,
