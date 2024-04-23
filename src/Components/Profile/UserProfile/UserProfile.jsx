@@ -21,7 +21,7 @@ const UserProfile = () => {
         queryKey: ["data"],
         queryFn: async () => {
             if (!user) return null
-            const res = await axiosPublic.get(`/userprofile/${userId}`)
+            const res = await axiosPublic.get(`/userprofile/${userId}`);
             setFollowers(res.data.getFollowers)
             setPosts(res.data.findPost);
             setUsers(res.data.user);
@@ -30,10 +30,12 @@ const UserProfile = () => {
         },
         enabled: !!user
     });
+    
     const isFollowing = users.followers && users.followers?.includes(user?.uid);
     useEffect(() => {
         refetch();
     }, [refetch])
+
 
    
 
@@ -113,22 +115,10 @@ const UserProfile = () => {
                             <button className="btn btn-sm btn-outline btn-success">{isFollowing ? 'Following' : 'Follow'}</button>
                             <button className="btn btn-sm btn-outline btn-success"><MarkEmailRead /></button>
                         </div>
-                        {/* <div className="border-b p-2 border-gray-200">
-                            <h2 className="font-bold mt-4 mb-3">Following</h2>
-                            {
-                                following.length <= 0 ? (
-                                    <h2>{users?.name} Is not following someone</h2>
-                                ) : following?.map((users, i) => <Following key={i} users={users} handleSeeOtherProfile={handleSeeOtherProfile} />)
-                            }
+                        
+                        <div className="text-xl mt-10">
+                            <h2>Saved</h2>
                         </div>
-                        <div>
-                            <h2 className="font-bold mt-4 mb-3 p-2">Followers</h2>
-                            {
-                                followers.length <= 0 ? (
-                                    <h2>{users?.name} has no follower be the first follower</h2>
-                                ) : followers?.map((users, i) => <Following key={i} users={users} handleSeeOtherProfile={handleSeeOtherProfile} />)
-                            }
-                        </div> */}
                     </div>
                 </div>
             </div>

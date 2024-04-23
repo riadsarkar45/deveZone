@@ -10,12 +10,11 @@ import IsLoading from "./Hooks/IsLoading";
 import AllTopics from "./Pages/AllTopics";
 import Polls from "./Components/Posts/Polls";
 import { UserContext } from "./Global/User";
-import { useQuery } from "@tanstack/react-query";
 
 const Home = () => {
     const axiosPublic = useAxiosPublic();
     const { user } = useContext(AuthContext)
-    const { userInfo } = useContext(UserContext)
+    const {userInfo} = useContext(UserContext)
     const [selectedCategory, setSelectedCategory] = useState('For You')
     const [posts, setPosts] = useState([])
     const [isSaved, setIsSaved] = useState(null)
@@ -25,7 +24,7 @@ const Home = () => {
     const [voteResult, setVoteResult] = useState([])
     const [createList, setCreateList] = useState("")
     const [listName, setListName] = useState('')
-    const [allList, setAllList] = useState([])
+
 
     useEffect(() => {
         if (!user) return;
@@ -50,27 +49,14 @@ const Home = () => {
             .finally(() => {
                 setIsLoading(false);
             });
+    }, [axiosPublic, user?.uid, user]);
 
-        axiosPublic.get(`/created-lists/${userInfo?.uid}`)
-            .then((res) => {
-                setAllList(res.data);
-            })
-            .catch((error) => {
-                console.error("Error fetching categories:", error);
-            })
-            .finally(() => {
-                setIsLoading(false);
-            });
-    }, [axiosPublic, user?.uid, user, userInfo?.uid]);
-
-
-
-    const handleSavePost = (postId, listName) => {
+    const handleSavePost = (postId) => {
         setIsSaved(true)
         if (isSaved) {
             toast.loading('Saving...')
         }
-        const dataToSave = { userId: user?.uid, postId: [postId], listName: listName }
+        const dataToSave = { userId: user?.uid, postId: postId, listName: listName }
         axiosPublic.post('/save-post', dataToSave)
             .then((res) => {
                 if (res.data.acknowledged) {
@@ -79,11 +65,12 @@ const Home = () => {
                 } else {
                     toast.error(res.data.msg)
                     setIsSaved(false)
+
                 }
             })
     }
 
-    const handleCreateList = (postId) => {
+    const handleCreateList = (postId) =>{
         setCreateList(postId);
     }
 
@@ -92,8 +79,8 @@ const Home = () => {
     }
 
     const handleSubmit = () => {
-        const dataToInsert = { userId: userInfo?.uid, listName: listName }
-        axiosPublic.post(`/create-list/${userInfo?.uid}`, dataToInsert).then(() => { toast.success('List Created') })
+        const dataToInsert = {userInfo:userInfo?.uid, listName: listName}
+        axiosPublic.post(`/create-list/${userInfo?.uid}`, dataToInsert).then(()=> {toast.success('List Created')})
     }
 
 
@@ -158,13 +145,12 @@ const Home = () => {
                                     posts?.map((post, i) => <Post
                                         key={i}
                                         post={post}
-                                        allList={allList}
                                         createList={createList}
                                         handleSubmit={handleSubmit}
                                         setCreateList={setCreateList}
                                         handleSavePost={handleSavePost}
                                         handleCreateList={handleCreateList}
-                                        handleSaveCreatedList={handleSaveCreatedList}
+                                        handleSaveCreatedList = {handleSaveCreatedList}
                                         handleUpdatePostClicks={handleUpdatePostClicks}
                                         polls={polls}
                                     />
